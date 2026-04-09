@@ -154,14 +154,14 @@ def copy_runs_directory(runs_pc_dir, runs_phone_dir, timezone_offset_hours, dire
             run_files = [filename for filename in os.listdir(pc_char_runs_dir) if os.path.isfile(os.path.join(pc_char_runs_dir, filename))]     
             for file_name in run_files:
                 pc_orig_file_path = os.path.join(pc_char_runs_dir, file_name)
-                with open(pc_orig_file_path, 'r') as f_orig:
+                with open(pc_orig_file_path, 'r', encoding='utf-8') as f_orig:
                     run_data = json.load(f_orig)
 
                 if 'local_time' in run_data:
                     run_data['local_time'] = pc_to_mobile_timestamp(run_data['local_time'], timezone_offset_hours)
 
                 temp_file_path = os.path.join(TMP_PC_PATH, f"pc_{char_folder}_{file_name}")
-                with open(temp_file_path, "w") as f_tmp:
+                with open(temp_file_path, "w", encoding='utf-8') as f_tmp:
                     json.dump(run_data, f_tmp, separators=(',', ':'))
 
                 phone_file_path = path_join_adb(char_folder_phone, file_name)
@@ -205,14 +205,14 @@ def copy_runs_directory(runs_pc_dir, runs_phone_dir, timezone_offset_hours, dire
                     print(f"Failed to pull {file_name} from {phone_file_path}. Error: {e}")
                     continue
                 
-                with open(tmp_file_path, "r") as f:
+                with open(tmp_file_path, "r", encoding='utf-8') as f:
                     run_data = json.load(f)
                 
                 if 'local_time' in run_data:
                     run_data['local_time'] = mobile_to_pc_timestamp(run_data['local_time'], timezone_offset_hours)
                 
                 pc_file_path = os.path.join(pc_char_runs_dir, file_name)
-                with open(pc_file_path, "w") as f:
+                with open(pc_file_path, "w", encoding='utf-8') as f:
                     json.dump(run_data, f, separators=(',', ':'))
                 
                 print(f"Successfully pulled and saved {file_name} to {pc_char_runs_dir}.")
@@ -224,7 +224,7 @@ def copy_runs_directory(runs_pc_dir, runs_phone_dir, timezone_offset_hours, dire
 #    while on mobile they're plaintext json.
 
 def decode_and_xor(file_path):
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding='utf-8') as f:
         base64_data = f.read()
         decoded_data = base64.b64decode(base64_data)
         decoded_bytes = bytes(byte ^ ord(XOR_KEY[i % len(XOR_KEY)]) for i, byte in enumerate(decoded_data))
@@ -244,10 +244,10 @@ def pull_encoded_json(phone_file_path, temp_file_path, pc_file_path):
         return
     
     print(f"Pulling and encoding active run save JSON from {phone_file_path}...")
-    with open(temp_file_path, "r") as f:
+    with open(temp_file_path, "r", encoding='utf-8') as f:
         json_data = json.load(f)
     encoded_data = encode_and_xor(json.dumps(json_data))
-    with open(pc_file_path, "w") as f:
+    with open(pc_file_path, "w", encoding='utf-8') as f:
         f.write(encoded_data)
     print(f"Successfully encoded and saved {os.path.basename(pc_file_path)}.")
 
@@ -308,7 +308,7 @@ def main():
                 
             decoded_str = decode_and_xor(pc_file_path)
             temp_file_path = os.path.join(autosaves_temp_path, autosave_file)
-            with open(temp_file_path, "w") as f:
+            with open(temp_file_path, "w", encoding='utf-8') as f:
                 f.write(decoded_str)
             push_files(autosaves_temp_path, saves_phone_path, [autosave_file], must_exist=True)
     else:
