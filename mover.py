@@ -228,7 +228,15 @@ def decode_and_xor(file_path):
         base64_data = f.read()
         decoded_data = base64.b64decode(base64_data)
         decoded_bytes = bytes(byte ^ ord(XOR_KEY[i % len(XOR_KEY)]) for i, byte in enumerate(decoded_data))
-        return decoded_bytes.decode('utf-8')
+        # The game uses platform default encoding for JSON serialization:
+        # UTF-8 on Android/Linux/macOS, but system locale on Windows (e.g. GBK on Chinese Windows).
+        # Try UTF-8 first, then fall back to the system default encoding.
+        try:
+            return decoded_bytes.decode('utf-8')
+        except UnicodeDecodeError:
+            import locale
+            system_encoding = locale.getpreferredencoding(False)
+            return decoded_bytes.decode(system_encoding)
 
 def encode_and_xor(json_str):
     encoded_bytes = bytes(ord(char) ^ ord(XOR_KEY[i % len(XOR_KEY)]) for i, char in enumerate(json_str))
