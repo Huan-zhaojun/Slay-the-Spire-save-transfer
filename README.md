@@ -1,3 +1,5 @@
+[![English](https://img.shields.io/badge/lang-English-blue.svg?style=for-the-badge)](README.md) [![中文](https://img.shields.io/badge/lang-简体中文-red.svg?style=for-the-badge)](README.zh-CN.md)
+
 # Introduction
 
 This project lets you move your current Slay the Spire run's save, your run history and your statistics/unlocks/etc from your PC to your android phone and vice-versa, using USB connection and ADB.  
