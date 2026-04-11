@@ -91,6 +91,19 @@ def mobile_to_pc_timestamp(timestamp, timezone_offset_hours):
     return local_dt_object.strftime('%Y%m%d%H%M%S')
 
 
+# PC build 2022-12-18+ serializes nested numeric values as floats (e.g. 6.0),
+#   but the mobile version cannot parse them and silently skips such run files.
+def convert_floats_to_ints(obj):
+    """Recursively convert whole-number floats to ints for mobile compatibility."""
+    if isinstance(obj, dict):
+        return {k: convert_floats_to_ints(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_floats_to_ints(v) for v in obj]
+    elif isinstance(obj, float) and obj == int(obj):
+        return int(obj)
+    return obj
+
+
 def validate_adb():
     try:
         subprocess.run(["adb", "version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -159,6 +172,8 @@ def copy_runs_directory(runs_pc_dir, runs_phone_dir, timezone_offset_hours, dire
 
                 if 'local_time' in run_data:
                     run_data['local_time'] = pc_to_mobile_timestamp(run_data['local_time'], timezone_offset_hours)
+
+                run_data = convert_floats_to_ints(run_data)
 
                 temp_file_path = os.path.join(TMP_PC_PATH, f"pc_{char_folder}_{file_name}")
                 with open(temp_file_path, "w", encoding='utf-8') as f_tmp:
